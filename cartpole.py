@@ -65,10 +65,8 @@ def cartpoleFeatureExtractor(state, action):
     for i in range(4):
         for j in range(i + 1, 4):
             features.append(((f'f{i}{j}', state[i], state[j], action), 1))
-    features.append((('f0', state[0], action), 1))
-    features.append((('f1', state[1], action), 1))
-    features.append((('f2', state[2], action), 1))
-    features.append((('f3', state[3], action), 1))
+    for i in range(4):
+        features.append(((f'f{i}', state[i], action), 1))
     features.append((('same vel dir', state[1] * state[3] > 0, action), 1))
     features.append((('same pos sign', state[0] * state[2] > 0, action), 1))
     features.append((('cart moving from origin', state[0] * state[1] > 0, action), 1))
@@ -79,19 +77,19 @@ def cartpoleFeatureExtractor(state, action):
 
 def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
     rewards = []
-    r100 = 0
+    t100 = 0
     for episode in range(numEpisodes):
         if episode % 100 == 0:
-            print('Episode:', episode, ', Average of last 100:', r100 / 100)
-            rewards.append(r100 / 100)
-            r100 = 0
-        if episode == 3000:
+            print('Episode:', episode, ', Average of last 100:', t100 / 100)
+            rewards.append(t100 / 100)
+            t100 = 0
+        if episode == 2000:
             rl.explorationProb = 0.3
-        if episode == 6000:
+        if episode == 4000:
             rl.explorationProb = 0.2
-        if episode == 8000:
+        if episode == 6000:
             rl.explorationProb = 0.1
-        if episode == 10000:
+        if episode == 9500:
             rl.explorationProb = 0
         state = tuple(env.reset())
         totalDiscount = 1
@@ -108,19 +106,21 @@ def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
 
             rl.incorporateFeedback(state, action, reward, newState)
             totalReward += totalDiscount * reward
-            r100 += reward
             totalDiscount *= rl.discount
             state = newState
 
             if done:
+                t100 += t
                 break
+
         if verbose:
             print(f'Episode {episode} timestep = {t}')
         env.close()
+
     return rewards
 
 
 rl = QlearningAlgorithm([0, 1], .99, cartpoleFeatureExtractor, explorationProb=0.4)
-rewards = simulate(rl, numEpisodes=12000 + 1, maxIterations=30000, verbose=False)
+rewards = simulate(rl, numEpisodes=10000 + 1, maxIterations=30000, verbose=False)
 plt.plot(rewards)
 plt.show()
