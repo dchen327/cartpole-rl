@@ -43,9 +43,9 @@ class QlearningAlgorithm():
         return 1 / math.sqrt(self.numIters)
 
     def getExplorationProb(self, episode):
-        if episode >= 4000:
+        if episode >= 5000:
             return 0
-        return 0.4 * 0.9996 ** episode
+        return 0.4 * 0.9997 ** episode
 
     def incorporateFeedback(self, state, action, reward, newState):
         eta = self.getStepSize()
@@ -67,11 +67,15 @@ def cartpoleFeatureExtractor(state, action):
     round_pos = [2, 2, 2, 2]
     state = tuple(round(state[i], round_pos[i]) for i in range(len(state)))
     features.append((state, 1))
+    feature_count = 0
     for i in range(4):
         for j in range(i + 1, 4):
-            features.append(((f'f{i}{j}', state[i], state[j], action), 1))
+            features.append(((f'f{feature_count}', state[i], state[j], action), 1))
+            feature_count += 1
+
     for i in range(4):
-        features.append(((f'f{i}', state[i], action), 1))
+        features.append(((f'f{feature_count}', state[i], action), 1))
+        feature_count += 1
     features.append((('same vel dir', state[1] * state[3] > 0, action), 1))
     features.append((('same pos sign', state[0] * state[2] > 0, action), 1))
     features.append((('cart moving from origin', state[0] * state[1] > 0, action), 1))
@@ -87,20 +91,20 @@ def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
         if episode % 100 == 0:
             print('Episode:', episode, ', Average of last 100:', t100 / 100)
             rewards.append(t100 / 100)
-            if t100 / 100 >= 195:  # solved
-                break
+            # if t100 / 100 >= 195:  # solved
+            #     break
             t100 = 0
         rl.explorationProb = rl.getExplorationProb(episode)
         state = tuple(env.reset())
         totalDiscount = 1
-        totalReward = 1
+        totalReward = 0
         for t in range(maxIterations):
-            # if numEpisodes - episode < 20:
-            #     env.render()
+            if numEpisodes - episode < 20:
+                env.render()
             action = rl.getAction(state)
             newState, reward, done, info = env.step(action)
-            if done:
-                reward = -reward
+            if done and t != maxIterations - 1:
+                reward = -reward  # punishment for losing
 
             newState = tuple(newState)
 
@@ -121,6 +125,6 @@ def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
 
 
 rl = QlearningAlgorithm([0, 1], .99, cartpoleFeatureExtractor)
-rewards = simulate(rl, numEpisodes=5000 + 1, maxIterations=30000, verbose=False)
+rewards = simulate(rl, numEpisodes=6000 + 1, maxIterations=200, verbose=False)
 plt.plot(rewards)
 plt.show()
