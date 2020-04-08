@@ -89,7 +89,7 @@ def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
             rl.explorationProb = 0.2
         if episode == 6000:
             rl.explorationProb = 0.1
-        if episode == 9500:
+        if episode == 7500:
             rl.explorationProb = 0
         state = tuple(env.reset())
         totalDiscount = 1
@@ -121,6 +121,6 @@ def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
 
 
 rl = QlearningAlgorithm([0, 1], .99, cartpoleFeatureExtractor, explorationProb=0.4)
-rewards = simulate(rl, numEpisodes=10000 + 1, maxIterations=30000, verbose=False)
+rewards = simulate(rl, numEpisodes=8000 + 1, maxIterations=30000, verbose=False)
 plt.plot(rewards)
 plt.show()
