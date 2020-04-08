@@ -59,9 +59,7 @@ def cartpoleFeatureExtractor(state, action):
     features.append((('f1', state[1], action), 1))
     features.append((('f2', state[2], action), 1))
     features.append((('f3', state[3], action), 1))
-    features.append((('same vel dir', state[1] * state[3] > 0), 1))
-    # features.append((('same side of origin', state[0] * state[2] > 0, action), 1))
-
+    features.append((('same dir', state[1] * state[3] > 0, action), 1))
     return features
 
 
@@ -102,14 +100,13 @@ def simulate(rl, numTrials=10, maxIterations=1000, verbose=False, sort=False):
 
             if done:
                 break
-        # if verbose:
-        if numTrials - trial < 50:
+        if verbose:
             print(f'Trial {trial} t = {t}')
         env.close()
     return rewards
 
 
-rl = QlearningAlgorithm([0, 1], 1, cartpoleFeatureExtractor, explorationProb=0.4)
+rl = QlearningAlgorithm([0, 1], .99, cartpoleFeatureExtractor, explorationProb=0.4)
 rewards = simulate(rl, numTrials=10000, maxIterations=30000, verbose=False)
 plt.plot(rewards)
 plt.show()
