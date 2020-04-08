@@ -1,3 +1,11 @@
+'''
+A pole is attached by an un-actuated joint to a cart, which moves along a frictionless track. The system is controlled by applying a force of +1 or -1 to the cart. The pendulum starts upright, and the goal is to prevent it from falling over. A reward of +1 is provided for every timestep that the pole remains upright. The episode ends when the pole is more than 15 degrees from vertical, or the cart moves more than 2.4 units from the center.
+
+CartPole-v0 defines "solving" as getting average reward of 195.0 over 100 consecutive trials.
+
+Author: David Chen
+'''
+
 import gym
 import math
 import random
@@ -54,10 +62,9 @@ def cartpoleFeatureExtractor(state, action):
     round_pos = [2, 2, 2, 2]
     state = tuple(round(state[i], round_pos[i]) for i in range(len(state)))
     features.append((state, 1))
-    features.append(((state[0], state[2]), 1))
-    features.append(((state[1], state[3]), 1))
-    features.append(((state[0], state[1]), 1))
-    features.append(((state[2], state[3]), 1))
+    for i in range(4):
+        for j in range(i + 1, 4):
+            features.append(((state[i], state[j], action), 1))
     features.append((('f0', state[0], action), 1))
     features.append((('f1', state[1], action), 1))
     features.append((('f2', state[2], action), 1))
@@ -74,19 +81,19 @@ def simulate(rl, numTrials=10, maxIterations=1000, verbose=False, sort=False):
             print(trial, r100 / 100)
             rewards.append(r100 / 100)
             r100 = 0
-        if trial == 2000:
+        if trial == 3000:
             rl.explorationProb = 0.3
-        if trial == 5000:
+        if trial == 6000:
             rl.explorationProb = 0.2
         if trial == 8000:
             rl.explorationProb = 0.1
-        if trial == 9500:
+        if trial == 11000:
             rl.explorationProb = 0
         state = tuple(env.reset())
         totalDiscount = 1
         totalReward = 1
         for t in range(maxIterations):
-            if numTrials - trial < 50:
+            if numTrials - trial < 20:
                 env.render()
             action = rl.getAction(state)
             newState, reward, done, info = env.step(action)
@@ -110,6 +117,6 @@ def simulate(rl, numTrials=10, maxIterations=1000, verbose=False, sort=False):
 
 
 rl = QlearningAlgorithm([0, 1], .99, cartpoleFeatureExtractor, explorationProb=0.4)
-rewards = simulate(rl, numTrials=10000, maxIterations=30000, verbose=False)
+rewards = simulate(rl, numTrials=15000 + 1, maxIterations=30000, verbose=False)
 plt.plot(rewards)
 plt.show()
