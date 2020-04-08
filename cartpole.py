@@ -43,9 +43,9 @@ class QlearningAlgorithm():
         return 1 / math.sqrt(self.numIters)
 
     def getExplorationProb(self, episode):
-        if episode > 3000:
+        if episode > 2900:
             return 0
-        return 0.4 * 0.9997 ** episode
+        return 0.5 * 0.9996 ** episode
 
     def incorporateFeedback(self, state, action, reward, newState):
         eta = self.getStepSize()
@@ -86,8 +86,8 @@ def cartpoleFeatureExtractor(state, action):
     features.append((('same pos sign', state[0] * state[2] > 0, action), 1))
     features.append((('cart moving from origin', state[0] * state[1] > 0, action), 1))
     features.append((('tip moving from origin', state[2] * state[3] > 0, action), 1))
-    features.append((('F0', state[1] - state[0]), 1))
-    features.append((('F1', state[3] * state[2]), 1))
+    features.append((('F0', state[0] * state[1]), 1))
+    features.append((('F1', state[2] * state[3]), 1))
 
     return features
 
