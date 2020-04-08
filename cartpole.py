@@ -56,6 +56,8 @@ def cartpoleFeatureExtractor(state, action):
     features.append((state, 1))
     features.append(((state[0], state[2]), 1))
     features.append(((state[1], state[3]), 1))
+    features.append(((state[0], state[1]), 1))
+    features.append(((state[2], state[3]), 1))
     features.append((('f0', state[0], action), 1))
     features.append((('f1', state[1], action), 1))
     features.append((('f2', state[2], action), 1))
