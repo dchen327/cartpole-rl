@@ -74,11 +74,11 @@ def simulate(rl, numTrials=10, maxIterations=1000, verbose=False, sort=False):
             r100 = 0
         if trial == 2000:
             rl.explorationProb = 0.3
-        if trial == 3000:
+        if trial == 5000:
             rl.explorationProb = 0.2
-        if trial == 7000:
+        if trial == 8000:
             rl.explorationProb = 0.1
-        if trial == 9000:
+        if trial == 9500:
             rl.explorationProb = 0
         state = tuple(env.reset())
         totalDiscount = 1
