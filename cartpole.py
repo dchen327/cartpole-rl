@@ -43,7 +43,7 @@ class QlearningAlgorithm():
         return 1 / math.sqrt(self.numIters)
 
     def getExplorationProb(self, episode):
-        if episode >= 5000:
+        if episode > 3000:
             return 0
         return 0.4 * 0.9997 ** episode
 
@@ -67,19 +67,27 @@ def cartpoleFeatureExtractor(state, action):
     round_pos = [2, 2, 2, 2]
     state = tuple(round(state[i], round_pos[i]) for i in range(len(state)))
     features.append((state, 1))
+    features.append(((state, action), 1))
     feature_count = 0
-    for i in range(4):
-        for j in range(i + 1, 4):
-            features.append(((f'f{feature_count}', state[i], state[j], action), 1))
-            feature_count += 1
-
     for i in range(4):
         features.append(((f'f{feature_count}', state[i], action), 1))
         feature_count += 1
+        for j in range(i + 1, 4):
+            features.append(((f'f{feature_count}', state[i], state[j]), 1))
+            feature_count += 1
+            for k in range(j + 1, 4):
+                features.append(((f'f{feature_count}', state[i], state[j], state[k]), 1))
+                feature_count += 1
+
+    # for i in range(4):
+    #     features.append(((f'f{feature_count}', state[i], action), 1))
+    #     feature_count += 1
     features.append((('same vel dir', state[1] * state[3] > 0, action), 1))
     features.append((('same pos sign', state[0] * state[2] > 0, action), 1))
     features.append((('cart moving from origin', state[0] * state[1] > 0, action), 1))
     features.append((('tip moving from origin', state[2] * state[3] > 0, action), 1))
+    features.append((('F0', state[1] - state[0]), 1))
+    features.append((('F1', state[3] * state[2]), 1))
 
     return features
 
@@ -98,8 +106,8 @@ def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
         state = tuple(env.reset())
         totalDiscount = 1
         totalReward = 0
-        for t in range(maxIterations):
-            if numEpisodes - episode < 20:
+        for t in range(1, maxIterations + 1):
+            if numEpisodes - episode < 5:
                 env.render()
             action = rl.getAction(state)
             newState, reward, done, info = env.step(action)
@@ -125,6 +133,6 @@ def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
 
 
 rl = QlearningAlgorithm([0, 1], .99, cartpoleFeatureExtractor)
-rewards = simulate(rl, numEpisodes=6000 + 1, maxIterations=200, verbose=False)
+rewards = simulate(rl, numEpisodes=4000 + 1, maxIterations=200, verbose=False)
 plt.plot(rewards)
 plt.show()
