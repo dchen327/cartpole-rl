@@ -71,6 +71,8 @@ def cartpoleFeatureExtractor(state, action):
     features.append((('f3', state[3], action), 1))
     features.append((('same vel dir', state[1] * state[3] > 0, action), 1))
     features.append((('same pos sign', state[0] * state[2] > 0, action), 1))
+    features.append((('cart moving from origin', state[0] * state[1] > 0, action), 1))
+    features.append((('tip moving from origin', state[2] * state[3] > 0, action), 1))
 
     return features
 
@@ -80,7 +82,7 @@ def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
     r100 = 0
     for episode in range(numEpisodes):
         if episode % 100 == 0:
-            print('Episode:', episode, 'Average of last 100:', r100 / 100)
+            print('Episode:', episode, ', Average of last 100:', r100 / 100)
             rewards.append(r100 / 100)
             r100 = 0
         if episode == 3000:
