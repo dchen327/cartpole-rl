@@ -37,8 +37,7 @@ class QlearningAlgorithm():
     def incorporateFeedback(self, state, action, reward, newState):
         eta = self.getStepSize()
         V_opt = 0
-        if newState:
-            V_opt = max(self.getQ(newState, newAction) for newAction in self.actions)
+        V_opt = max(self.getQ(newState, newAction) for newAction in self.actions)
         Q_opt = self.getQ(state, action)
         for f, v in self.featureExtractor(state, action):
             self.weights[f] -= eta * (Q_opt - (reward + self.discount * V_opt)) * v
@@ -55,6 +54,8 @@ def cartpoleFeatureExtractor(state, action):
     round_pos = [2, 2, 2, 2]
     state = tuple(round(state[i], round_pos[i]) for i in range(len(state)))
     features.append((state, 1))
+    features.append(((state[0], state[2]), 1))
+    features.append(((state[1], state[3]), 1))
     features.append((('f0', state[0], action), 1))
     features.append((('f1', state[1], action), 1))
     features.append((('f2', state[2], action), 1))
@@ -71,11 +72,11 @@ def simulate(rl, numTrials=10, maxIterations=1000, verbose=False, sort=False):
             print(trial, r100 / 100)
             rewards.append(r100 / 100)
             r100 = 0
-        if trial == 1000:
-            rl.explorationProb = 0.3
         if trial == 2000:
+            rl.explorationProb = 0.3
+        if trial == 3000:
             rl.explorationProb = 0.2
-        if trial == 5000:
+        if trial == 7000:
             rl.explorationProb = 0.1
         if trial == 9000:
             rl.explorationProb = 0
