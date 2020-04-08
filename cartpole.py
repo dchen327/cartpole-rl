@@ -16,11 +16,11 @@ env = gym.make('CartPole-v0')
 
 
 class QlearningAlgorithm():
-    def __init__(self, actions, discount, featureExtractor, explorationProb=0.2):
+    def __init__(self, actions, discount, featureExtractor):
         self.actions = actions
         self.discount = discount
         self.featureExtractor = featureExtractor
-        self.explorationProb = explorationProb
+        self.explorationProb = 1
         self.weights = defaultdict(float)
         self.numIters = 0
 
@@ -41,6 +41,11 @@ class QlearningAlgorithm():
 
     def getStepSize(self):
         return 1 / math.sqrt(self.numIters)
+
+    def getExplorationProb(self, episode):
+        if episode >= 4000:
+            return 0
+        return 0.4 * 0.9996 ** episode
 
     def incorporateFeedback(self, state, action, reward, newState):
         eta = self.getStepSize()
@@ -82,21 +87,16 @@ def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
         if episode % 100 == 0:
             print('Episode:', episode, ', Average of last 100:', t100 / 100)
             rewards.append(t100 / 100)
+            if t100 / 100 >= 195:  # solved
+                break
             t100 = 0
-        if episode == 2000:
-            rl.explorationProb = 0.3
-        if episode == 4000:
-            rl.explorationProb = 0.2
-        if episode == 6000:
-            rl.explorationProb = 0.1
-        if episode == 7500:
-            rl.explorationProb = 0
+        rl.explorationProb = rl.getExplorationProb(episode)
         state = tuple(env.reset())
         totalDiscount = 1
         totalReward = 1
         for t in range(maxIterations):
-            if numEpisodes - episode < 20:
-                env.render()
+            # if numEpisodes - episode < 20:
+            #     env.render()
             action = rl.getAction(state)
             newState, reward, done, info = env.step(action)
             if done:
@@ -120,7 +120,7 @@ def simulate(rl, numEpisodes=10, maxIterations=1000, verbose=False, sort=False):
     return rewards
 
 
-rl = QlearningAlgorithm([0, 1], .99, cartpoleFeatureExtractor, explorationProb=0.4)
-rewards = simulate(rl, numEpisodes=8000 + 1, maxIterations=30000, verbose=False)
+rl = QlearningAlgorithm([0, 1], .99, cartpoleFeatureExtractor)
+rewards = simulate(rl, numEpisodes=5000 + 1, maxIterations=30000, verbose=False)
 plt.plot(rewards)
 plt.show()
